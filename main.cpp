@@ -1,10 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include "Card.hpp"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
+
+    Card card1("test", 1, 10, 10);
 
     while (window.isOpen())
     {
@@ -17,6 +20,7 @@ int main()
 
         window.clear();
         window.draw(shape);
+        card1.render(window);
         window.display();
     }
 
