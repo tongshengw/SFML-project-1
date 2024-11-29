@@ -9,3 +9,11 @@ Card::Card(const std::string &name, int cost, float xpos, float ypos)
 void Card::render(sf::RenderWindow &window) const {
     window.draw(backgroundShape);
 }
+
+int Card::get_cost() const {
+    return cost;
+}
+
+std::string Card::get_name() const {
+    return name;
+}

@@ -11,6 +11,8 @@ class Card {
 
         void render(sf::RenderWindow &window) const;
 
+        int get_cost() const;
+        std::string get_name() const;
 
     private:
 
