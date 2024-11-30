@@ -27,7 +27,7 @@ Sphere & sphere_init(Sphere &s, float x, float y, float z) {
 }
 
 // s is the input vector to be projected
-sf::Vector2f project(sf::Vector3f cameraPosition, sf::Vector3f cameraRotation,
+float project(sf::Vector2f &projected, sf::Vector3f cameraPosition, sf::Vector3f cameraRotation,
                      sf::Vector3f s, float focalLength, int winSizeX, int winSizeY) {
   sf::Vector3f cameraRelPos;
 
@@ -51,12 +51,14 @@ sf::Vector2f project(sf::Vector3f cameraPosition, sf::Vector3f cameraRotation,
                    sin(cameraRotation.x) *
                        (cos(cameraRotation.z) * Y - sin(cameraRotation.z) * X);
 
-  sf::Vector2f projected;
+  if (cameraRelPos.z <= 100) {
+    return 0;
+  }
 
-  projected.x = (focalLength / cameraRelPos.z) * cameraRelPos.x + winSizeX / 2;
-  projected.y = (focalLength / cameraRelPos.z) * cameraRelPos.y + winSizeY / 2;
+  projected.x = ((focalLength/cameraRelPos.z) * cameraRelPos.x) + winSizeX / 2;
+  projected.y = ((focalLength / cameraRelPos.z) * cameraRelPos.y) + winSizeY / 2;
 
-  return projected;
+  return focalLength/cameraRelPos.z;
 }
 
 sf::Clock deltaTimeClock;
@@ -65,12 +67,13 @@ sf::Time deltaTime;
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(1000, 1000), "A below mediocre 3d Renderer");
 
     vector<Sphere> spheres;
     Sphere s1;
     Sphere s2;
     Sphere s3;
+    Sphere s4;
     sphere_init(s1, 0, 0, 0);
     s1.color=sf::Color::Green;
     spheres.push_back(s1);
@@ -80,16 +83,17 @@ int main()
     sphere_init(s3, 0, 60, 0);
     s3.color = sf::Color::Red;
     spheres.push_back(s3);
-    
+    sphere_init(s4, 0, 0, 60);
+    s4.color = sf::Color::Cyan;
+    spheres.push_back(s4);
 
-    sf::Vector3f cameraPosition(300, 0, 300);
+    
+    float i = -(3*3.14)/4;
+    sf::Vector3f cameraPosition(0, 0, 0);
     sf::Vector3f cameraRotation(0, 0, 0);
 
     float focalLength = 100;
     float sphereRadius = 30;
-
-    float cameraPolarAngle = 0;
-    float cameraPolarDisplacement = 50;
 
     while (window.isOpen())
     {
@@ -102,38 +106,34 @@ int main()
 
         deltaTime = deltaTimeClock.restart();
 
-        // cameraPolarAngle += deltaTime.asSeconds();
-        // cameraPosition.x = cameraPolarDisplacement * cos(cameraPolarAngle);
-        // cameraPosition.y = cameraPolarDisplacement * sin(cameraPolarAngle);
-
-        // cameraRotation.x = cameraPolarAngle;
+        sort(spheres.begin(), spheres.end(), [cameraPosition](Sphere a, Sphere b) {
+            float aDist = sqrt(pow(a.x - cameraPosition.x, 2) + pow(a.y - cameraPosition.y, 2) + pow(a.z - cameraPosition.z, 2));
+            float bDist = sqrt(pow(b.x - cameraPosition.x, 2) + pow(b.y - cameraPosition.y, 2) + pow(b.z - cameraPosition.z, 2));
+            return aDist > bDist;
+        });
 
         window.clear();
 
         for (Sphere s : spheres) {
-            sf::Vector3f sphereEdgeVector;
             sf::Vector3f sphereVector(s.x, s.y, s.z);
-            sphereEdgeVector = sf::Vector3f(s.x + sphereRadius, s.y, s.z);
 
             int winSizeX = window.getSize().x;
             int winSizeY = window.getSize().y;
 
-            sf::Vector2f projectedSphereVector = project(cameraPosition, cameraRotation, sphereVector, focalLength, winSizeX, winSizeY);
-            sf::Vector2f projectedSphereEdgeVector = project(cameraPosition, cameraRotation, sphereEdgeVector, focalLength, winSizeX, winSizeY);
+            sf::Vector2f projectedSphereVector;
+            float scaleFactor = project(projectedSphereVector, cameraPosition, cameraRotation, sphereVector, focalLength, winSizeX, winSizeY);
 
-            sf::Vector2f diff = projectedSphereEdgeVector - projectedSphereVector;
+            if (scaleFactor != 0) {
+                window.setView(sf::View(sf::FloatRect(0.f, 0.f, window.getSize().x, window.getSize().y)));
 
-            float projectedRadius = sqrt(diff.x*diff.x + diff.y*diff.y);
+                sf::CircleShape circle;
+                circle.setRadius(scaleFactor * sphereRadius);
 
-            window.setView(sf::View(sf::FloatRect(0.f, 0.f, window.getSize().x, window.getSize().y)));
-
-            sf::CircleShape circle;
-            circle.setRadius(projectedRadius);
-
-            circle.setFillColor(s.color);
-            circle.setOrigin(projectedRadius, projectedRadius);
-            circle.setPosition(projectedSphereVector.x, projectedSphereVector.y);
-            window.draw(circle);
+                circle.setFillColor(s.color);
+                circle.setOrigin(scaleFactor * sphereRadius, scaleFactor * sphereRadius);
+                circle.setPosition(projectedSphereVector.x, projectedSphereVector.y);
+                window.draw(circle);
+            }
         }
         
         window.display();
