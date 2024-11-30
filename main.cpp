@@ -9,9 +9,17 @@ struct Sphere {
     float x;
     float y;
     float z;
+    sf::Color color;
 };
 
 Sphere & sphere_init(Sphere &s, float x, float y, float z) {
+    
+    sf::Color color;
+    color.r = round(rand()*255);
+    color.g = round(rand()*255);
+    color.b = round(rand()*255);
+    s.color = color;
+
     s.x = x;
     s.y = y;
     s.z = z;
@@ -58,20 +66,26 @@ sf::Time deltaTime;
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML works!");
-    
+
     vector<Sphere> spheres;
     Sphere s1;
     Sphere s2;
     Sphere s3;
-    spheres.push_back(sphere_init(s1, 0, 0, 10));
-    // spheres.push_back(sphere_init(s2, 60, 0, 30));
-    // spheres.push_back(sphere_init(s3, 0, 60, 30));
+    sphere_init(s1, 0, 0, 0);
+    s1.color=sf::Color::Green;
+    spheres.push_back(s1);
+    sphere_init(s2, 60, 0, 0);
+    s2.color = sf::Color::Blue;
+    spheres.push_back(s2);
+    sphere_init(s3, 0, 60, 0);
+    s3.color = sf::Color::Red;
+    spheres.push_back(s3);
     
 
-    sf::Vector3f cameraPosition(0, 0, 0);
+    sf::Vector3f cameraPosition(300, 0, 300);
     sf::Vector3f cameraRotation(0, 0, 0);
 
-    float focalLength = 10;
+    float focalLength = 100;
     float sphereRadius = 30;
 
     float cameraPolarAngle = 0;
@@ -115,7 +129,8 @@ int main()
 
             sf::CircleShape circle;
             circle.setRadius(projectedRadius);
-            circle.setFillColor(sf::Color::Green);
+
+            circle.setFillColor(s.color);
             circle.setOrigin(projectedRadius, projectedRadius);
             circle.setPosition(projectedSphereVector.x, projectedSphereVector.y);
             window.draw(circle);
