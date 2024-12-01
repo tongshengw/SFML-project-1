@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include <ctime>    // Add this include
 
 using namespace std;
 
@@ -15,9 +14,9 @@ struct Sphere {
 
 Sphere & sphere_init(Sphere &s, float x, float y, float z) {
     sf::Color color;
-    color.r = rand() % 256;
-    color.g = rand() % 256;
-    color.b = rand() % 256;
+    color.r = rand() % 100;
+    color.g = rand() % 100;
+    color.b = rand() % 100;
     s.color = color;
 
     s.x = x;
@@ -77,7 +76,7 @@ int main()
     Sphere s3;
     Sphere s4;
     sphere_init(s1, 0, 0, 0);
-    s1.color=sf::Color::Green;
+    s1.color=sf::Color::White;
     spheres.push_back(s1);
     sphere_init(s2, 60, 0, 0);
     s2.color = sf::Color::Blue;
@@ -97,7 +96,7 @@ int main()
 
     
     // float i = -(3*3.14)/4;
-    sf::Vector3f cameraPosition(150, 0, 150);
+    sf::Vector3f cameraPosition(0, 0, 0);
     sf::Vector3f cameraRotation(0, 0, 0);
 
     float focalLength = 100;
@@ -105,28 +104,29 @@ int main()
 
     float dist = 0;
 
+    float paramAngle = 0;
+
     while (window.isOpen())
     {
-        // paramAngle += deltaTime.asSeconds();
 
-        // cameraPosition.x = 200*cos(paramAngle);
-        // cameraPosition.y = 200*sin(paramAngle);
-
-        // // Calculate direction vector from camera to origin (0,0,0)
-        // sf::Vector3f direction(-cameraPosition.x, -cameraPosition.y, -cameraPosition.z);
-        // float length = sqrt(pow(direction.x, 2) + pow(direction.y, 2) + pow(direction.z, 2));
-        // direction.x /= length;
-        // direction.y /= length;
-        // direction.z /= length;
-
-        // // Calculate rotation angles
-        // float yaw = atan2(-direction.y, -direction.x);  // Negated for correct orientation
-        // float pitch = -asin(direction.z);  // Negated to match camera orientation
-        // float roll = 3.14;
-
-        // cameraRotation.y = yaw;      // yaw affects y-axis rotation
-        // cameraRotation.x = pitch;    // pitch affects x-axis rotation
-        // cameraRotation.z = roll;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+            cameraPosition.y -= deltaTime.asSeconds() * 100;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            cameraPosition.y += deltaTime.asSeconds() * 100;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+            cameraPosition.x -= deltaTime.asSeconds() * 100;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            cameraPosition.x += deltaTime.asSeconds() * 100;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            cameraPosition.z += deltaTime.asSeconds() * 100;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+            cameraPosition.z -= deltaTime.asSeconds() * 100;
+        }
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -137,11 +137,11 @@ int main()
 
         deltaTime = deltaTimeClock.restart();
 
-        dist += deltaTime.asSeconds()/3;
+        // dist += deltaTime.asSeconds();
 
-        cameraPosition.z = 300*sin(dist);
+        // cameraPosition.z = 300*sin(dist);
 
-        cameraRotation.z += deltaTime.asSeconds()/10;
+        // cameraRotation.x = sin(dist);
 
         sort(spheres.begin(), spheres.end(), [cameraPosition](Sphere a, Sphere b) {
             float aDist = sqrt(pow(a.x - cameraPosition.x, 2) + pow(a.y - cameraPosition.y, 2) + pow(a.z - cameraPosition.z, 2));
@@ -160,7 +160,7 @@ int main()
             sf::Vector2f projectedSphereVector;
             float scaleFactor = project(projectedSphereVector, cameraPosition, cameraRotation, sphereVector, focalLength, winSizeX, winSizeY);
 
-            if (scaleFactor > 0) {  // Check for valid projection
+            if (scaleFactor > 0) {
                 window.setView(sf::View(sf::FloatRect(0.f, 0.f, window.getSize().x, window.getSize().y)));
 
                 sf::CircleShape circle;
